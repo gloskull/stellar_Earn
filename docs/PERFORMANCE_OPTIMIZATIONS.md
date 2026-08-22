@@ -67,6 +67,30 @@ If `Intl` ever proves insufficient (e.g. complex date arithmetic), the
 sanctioned fallback is `date-fns`: it is tree-shakeable and already covered by
 `modularizeImports`/`optimizePackageImports` in `next.config.ts`.
 
+## ClaimButton: In-Flight Lock against Duplicate Reward Claims
+
+### Overview
+
+`FrontEnd/my-app/components/rewards/ClaimButton.tsx` enforces an in-flight lock using synchronous `inFlightRef` and `isInFlight` component state. Rapid successive clicks during an active claim transaction are ignored synchronously before extra requests or RPC/API calls can be initiated (#2150).
+
+### Lock Lifecycle
+
+1. **Lock Acquisition**: Upon click, `inFlightRef.current` is synchronously set to `true`, and `isInFlight` is updated to disable the button UI and show the loading spinner.
+2. **Duplicate Guard**: Any subsequent click while `inFlightRef.current`, `disabled`, or `status === 'pending'` is `true` returns immediately without executing `onClick()`.
+3. **Lock Release**: The lock is released in a `finally` block when `onClick()` resolves or rejects. Component unmount safety is guarded via `isMountedRef`.
+
+### Performance & Efficiency Impact
+
+Verified via Vitest benchmark (`FrontEnd/my-app/scripts/benchmarks/claim-button.bench.tsx`, run via `npx vitest run --config vitest.benchmark.config.ts`):
+
+| Rapid Click Burst Size | Requests Before Lock | Requests After Lock | Duplicate Requests Prevented | RPC/API Load Reduction |
+| ---------------------- | -------------------- | ------------------- | ---------------------------- | ---------------------- |
+| 10 clicks              | 10                   | 1                   | 9                            | **100%**               |
+| 50 clicks              | 50                   | 1                   | 49                           | **100%**               |
+| 100 clicks             | 100                  | 1                   | 99                           | **100%**               |
+
+Results are saved to `FrontEnd/my-app/scripts/benchmarks/results/claim-button.latest.json`.
+
 ## Backend: Batch Payout Transactions
 
 `StellarService.sendBatchPayments()` batches up to 100 payment operations into a

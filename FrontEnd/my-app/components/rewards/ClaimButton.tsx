@@ -1,35 +1,75 @@
 'use client';
 
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ClaimStatus } from '@/lib/hooks/useClaim';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 interface ClaimButtonProps {
-  onClick: () => void;
+  onClick: () => void | Promise<void>;
   status: ClaimStatus;
   disabled?: boolean;
 }
 
 export function ClaimButton({ onClick, status, disabled }: ClaimButtonProps) {
-  const isLoading = status === 'pending';
+  const [isInFlight, setIsInFlight] = useState(false);
+  const inFlightRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const isPending = status === 'pending' || isInFlight;
+
+  const handleClick = useCallback(
+    async (e?: React.MouseEvent<HTMLButtonElement>) => {
+      if (e) {
+        e.preventDefault();
+      }
+
+      // Guard against duplicate / in-flight presses or disabled states
+      if (inFlightRef.current || disabled || status === 'pending') {
+        return;
+      }
+
+      inFlightRef.current = true;
+      setIsInFlight(true);
+
+      try {
+        await onClick();
+      } catch {
+        // Handle/absorb thrown errors so in-flight state safely resets
+      } finally {
+        inFlightRef.current = false;
+        if (isMountedRef.current) {
+          setIsInFlight(false);
+        }
+      }
+    },
+    [onClick, disabled, status]
+  );
 
   return (
     <button
-      onClick={onClick}
-      disabled={disabled || isLoading}
+      onClick={handleClick}
+      disabled={disabled || isPending}
       className={`
         relative w-full flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-lg transition-all
-        ${isLoading ? 'cursor-not-allowed opacity-80' : 'hover:scale-[1.02] active:scale-[0.98]'}
+        ${isPending ? 'cursor-not-allowed opacity-80' : 'hover:scale-[1.02] active:scale-[0.98]'}
         ${disabled ? 'cursor-not-allowed bg-zinc-400' : 'bg-primary hover:bg-primary-hover'}
       `}
       aria-label={
-        isLoading
+        isPending
           ? 'Processing transaction, please wait'
           : disabled
             ? 'Claim rewards unavailable'
             : 'Claim all rewards'
       }
     >
-      {isLoading ? (
+      {isPending ? (
         <>
           <LoadingSpinner
             size="sm"

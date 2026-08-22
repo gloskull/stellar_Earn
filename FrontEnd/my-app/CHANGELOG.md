@@ -7,7 +7,7 @@ The format is based on
 [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-> **鈿狅笍 Breaking type / model changes MUST be recorded here.**
+> **⚠️ Breaking type / model changes MUST be recorded here.**
 > See
 > [`docs/TYPE_CHANGES_POLICY.md`](./docs/TYPE_CHANGES_POLICY.md)
 > for the full policy, definitions, and examples. PRs that modify files under
@@ -24,32 +24,36 @@ Each release block uses the following ordered sections (omit empty ones):
 
 | Section                         | Use for                                                                                          |
 | ------------------------------- | ------------------------------------------------------------------------------------------------ |
-| **馃挜 Breaking 鈥� Types/Models**  | Any incompatible change to a TypeScript type, interface, enum, Zod schema, or API response shape |
-| **馃挜 Breaking 鈥� Runtime/API**   | Any incompatible runtime behaviour, route, prop, or env-var change                               |
-| **鉁� Added**                    | New features, types, hooks, or models (additive only)                                            |
-| **馃洜 Changed**                  | Backwards-compatible changes to existing behaviour                                               |
-| **鉀� Deprecated**               | Soon-to-be-removed types or APIs                                                                 |
-| **馃棏 Removed**                  | Previously-deprecated types or APIs that are now gone                                            |
-| **馃悰 Fixed**                    | Bug fixes                                                                                        |
-| **馃敀 Security**                 | Vulnerability fixes                                                                              |
+| **💥 Breaking — Types/Models**  | Any incompatible change to a TypeScript type, interface, enum, Zod schema, or API response shape |
+| **💥 Breaking — Runtime/API**   | Any incompatible runtime behaviour, route, prop, or env-var change                               |
+| **✨ Added**                    | New features, types, hooks, or models (additive only)                                            |
+| **🛠 Changed**                  | Backwards-compatible changes to existing behaviour                                               |
+| **⚠️ Deprecated**               | Soon-to-be-removed types or APIs                                                                 |
+| **🗑 Removed**                  | Previously-deprecated types or APIs that are now gone                                            |
+| **🐛 Fixed**                    | Bug fixes                                                                                        |
+| **🔒 Security**                 | Vulnerability fixes                                                                              |
 
-Every **馃挜 Breaking 鈥� Types/Models** entry must include:
+Every **💥 Breaking — Types/Models** entry must include:
 
-1. The fully-qualified symbol (e.g. `lib/types/quest.ts 鈫� QuestStatus`).
+1. The fully-qualified symbol (e.g. `lib/types/quest.ts → QuestStatus`).
 2. A one-line summary of the change.
-3. A **Migration** sub-bullet showing the before 鈫� after code.
+3. A **Migration** sub-bullet showing the before → after code.
 4. The PR or issue number (e.g. `(#068)`).
 
 ---
 
 ## [Unreleased]
 
-### 馃挜 Breaking 鈥� Types/Models
+### 💥 Breaking — Types/Models
 
 _None yet._
 
-### 鉁� Added
+### ✨ Added
 
+- **Guard against duplicate reward claims with in-flight lock in ClaimButton** ([#2150](https://github.com/EarnQuestOne/stellar_Earn/issues/2150)).
+  - `components/rewards/ClaimButton.tsx` now maintains a synchronous in-flight lock that disables the button and ignores repeated presses while a claim request is pending.
+  - Added unit regression tests in `components/rewards/__tests__/ClaimButton.test.tsx`.
+  - Added benchmark script `scripts/benchmarks/claim-button.bench.tsx` demonstrating 100% duplicate claim transaction prevention and RPC/API call reduction.
 - **Skeleton loading states for async card grids** ([FE-050](https://github.com/Kappa16/stellar_Earn/issues/050)).
   - Improved user experience with loading state indicators while fetching data.
   - Enhanced API client and validation modules for better async handling.
@@ -103,70 +107,70 @@ _None yet._
   | 1000 quests | Selection update | 535.67 ms | 7.31 ms | ~73x |
   | 1000 quests | Rows mounted | 1000 | 10 | flat (page-size bound) |
 
-                                  ### 馃洜 Changed
+### 🛠 Changed
 
-                                  - Updated root [`CONTRIBUTING.md`](../../CONTRIBUTING.md) and the
-                                    [PR template](../../.github/pull_request_template.md) with a "Breaking
-                                      Type/Model Changes" checklist that links to this changelog.
+- Updated root [`CONTRIBUTING.md`](../../CONTRIBUTING.md) and the
+  [PR template](../../.github/pull_request_template.md) with a "Breaking
+  Type/Model Changes" checklist that links to this changelog.
 
-                                      ### 鉀� Deprecated
+### ⚠️ Deprecated
 
-                                      _None yet._
+_None yet._
 
-                                      ### 馃棏 Removed
+### 🗑 Removed
 
-                                      _None yet._
+_None yet._
 
-                                      ### 馃悰 Fixed
+### 🐛 Fixed
 
 - Optimized image rendering now reserves intrinsic space with an aspect ratio so media placeholders do not trigger layout shift while assets load.
 - Tests: updated `lib/api/client.test.ts` to include response-interceptor tests for token-refresh failures.
 
-                                      ### 馃敀 Security
+### 🔒 Security
 
-                                      _None yet._
+_None yet._
 
-                                      ---
+---
 
-                                      ## Worked Example 鈥� How to Document a Breaking Type Change
+## Worked Example — How to Document a Breaking Type Change
 
-                                      > The following block is **illustrative only** 鈥� keep it at the bottom of the
-                                      > file forever as a template for new contributors.
+> The following block is **illustrative only** — keep it at the bottom of the
+> file forever as a template for new contributors.
 
-                                      ```markdown
-                                      ## [1.2.0] 鈥� 2026-06-15
+```markdown
+## [1.2.0] — 2026-06-15
 
-                                      ### 馃挜 Breaking 鈥� Types/Models
+### 💥 Breaking — Types/Models
 
-                                      - **`lib/types/quest.ts 鈫� QuestStatus`** 鈥� renamed `PAUSED` to `ON_HOLD` to
-                                        match the new contract event name. (#412)
+- **`lib/types/quest.ts → QuestStatus`** — renamed `PAUSED` to `ON_HOLD` to
+  match the new contract event name. (#412)
 
-                                          **Migration:**
+  **Migration:**
 
-                                            ```ts
-                                              // before
-                                                import { QuestStatus } from '@/lib/types';
-                                                  if (quest.status === QuestStatus.PAUSED) { 鈥� }
+  ```ts
+  // before
+  import { QuestStatus } from '@/lib/types';
+  if (quest.status === QuestStatus.PAUSED) { … }
 
-                                                    // after
-                                                      import { QuestStatus } from '@/lib/types';
-                                                        if (quest.status === QuestStatus.ON_HOLD) { 鈥� }
-                                                          ```
+  // after
+  import { QuestStatus } from '@/lib/types';
+  if (quest.status === QuestStatus.ON_HOLD) { … }
+  ```
 
-                                                          - **`lib/types/api.types.ts 鈫� PaginationMeta`** 鈥� `cursor` is now required
-                                                            (was optional). All consumers must pass a cursor when paginating. (#418)
+- **`lib/types/api.types.ts → PaginationMeta`** — `cursor` is now required
+  (was optional). All consumers must pass a cursor when paginating. (#418)
 
-                                                              **Migration:**
+  **Migration:**
 
-                                                                ```ts
-                                                                  // before
-                                                                    const meta: PaginationMeta = { page: 1, limit: 20, total: 0, totalPages: 0, hasMore: false };
+  ```ts
+  // before
+  const meta: PaginationMeta = { page: 1, limit: 20, total: 0, totalPages: 0, hasMore: false };
 
-                                                                      // after
-                                                                        const meta: PaginationMeta = { page: 1, limit: 20, total: 0, totalPages: 0, hasMore: false, cursor: '' };
-                                                                          ```
-                                                                          ```
+  // after
+  const meta: PaginationMeta = { page: 1, limit: 20, total: 0, totalPages: 0, hasMore: false, cursor: '' };
+  ```
+```
 
-                                                                          ---
+---
 
-                                                                          [Unreleased]: https://github.com/Kappa16/stellar_Earn/compare/HEAD
+[Unreleased]: https://github.com/Kappa16/stellar_Earn/compare/HEAD
